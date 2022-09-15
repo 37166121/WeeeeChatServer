@@ -3,9 +3,12 @@ package socket.manager;
 import socket.ChatSocket;
 import socket.bean.ChatBean;
 import socket.bean.MessageBean;
+import socket.bean.UserBean;
+
 import static util.GsonUtil.GsonUtil;
 
 import java.util.Vector;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 public class ServerManager {
     private ServerManager() {}
@@ -47,7 +50,7 @@ public class ServerManager {
     }
 
     /**
-     * 私聊
+     * 群聊
      * @param socket 消息来源客户端
      * @param rid 房间号
      * @param chatBean 消息
@@ -57,7 +60,47 @@ public class ServerManager {
             if (!socket.equals(it)) {
                 it.getRoom().forEach( action -> {
                     if (action == rid) {
-                        it.sendMessage(GsonUtil(new MessageBean<>(MessageBean.BROADCAST, chatBean)));
+                        it.sendMessage(GsonUtil(new MessageBean<>(MessageBean.SPECIFY, chatBean)));
+                    }
+                });
+            }
+        });
+    }
+
+    /**
+     * 进入房间
+     * @param socket 消息来源客户端
+     * @param rid 房间号
+     * @param chatBean 消息
+     */
+    public void enterRoom(ChatSocket socket, int rid, ChatBean chatBean) {
+        vector.forEach( it -> {
+            if (socket.equals(it)) {
+                socket.getRoom().add(rid);
+            } else {
+                it.getRoom().forEach( action -> {
+                    if (action == rid) {
+                        it.sendMessage(GsonUtil(new MessageBean<>(MessageBean.ENTER_ROOM, chatBean)));
+                    }
+                });
+            }
+        });
+    }
+
+    /**
+     * 退出房间
+     * @param socket 消息来源客户端
+     * @param rid 房间号
+     * @param chatBean 消息
+     */
+    public void quitRoom(ChatSocket socket, int rid, ChatBean chatBean) {
+        vector.forEach( it -> {
+            if (socket.equals(it)) {
+                socket.getRoom().remove(rid);
+            } else {
+                it.getRoom().forEach( action -> {
+                    if (action == rid) {
+                        it.sendMessage(GsonUtil(new MessageBean<>(MessageBean.QUIT_ROOM, chatBean)));
                     }
                 });
             }

@@ -20,12 +20,12 @@ public class ChatBean {
     /**
      * 接收方 私聊 用户id
      */
-    private String toUid = "";
+    private String uid = "";
 
     /**
      * 接收方 群聊 房间id
      */
-    private int toRid = 0;
+    private int rid = 0;
 
     /**
      * 消息发布时间

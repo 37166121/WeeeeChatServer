@@ -81,11 +81,11 @@ public class ChatSocket extends Thread {
             case CONNECT:
                 // 上线
                 setUserBean(GsonUtil(messageBean.getContent()));
+                enterRoom(0);
                 sendMessage(GsonUtil(new MessageBean<Boolean>(CONNECT, true)));
                 break;
             case OFFLINE:
                 // 下线
-                // ServerManager.getInstance().remove(this);
                 break;
             case BROADCAST :
                 // 广播频道
@@ -95,20 +95,26 @@ public class ChatSocket extends Thread {
             case SPECIFY :
                 // 房间
                 chatBean = setChatBean(GsonUtil(messageBean.getContent()));
-                ServerManager.getInstance().publish(this, chatBean.getToRid(), chatBean);
+                ServerManager.getInstance().publish(this, chatBean.getRid(), chatBean);
                 break;
             case PRIVATE :
                 // 私聊
                 chatBean = setChatBean(GsonUtil(messageBean.getContent()));
-                ServerManager.getInstance().publish(this, chatBean.getToUid(), chatBean);
+                ServerManager.getInstance().publish(this, chatBean.getUid(), chatBean);
                 break;
             case ENTER_ROOM:
                 // 进入房间
-                sendMessage(GsonUtil(new MessageBean<Boolean>(ENTER_ROOM, true)));
+                chatBean = setChatBean(GsonUtil(messageBean.getContent()));
+                enterRoom(chatBean.getRid());
+                ServerManager.getInstance().enterRoom(this, chatBean.getRid(), chatBean);
+                // sendMessage(GsonUtil(new MessageBean<ChatBean>(ENTER_ROOM, chatBean)));
                 break;
             case QUIT_ROOM:
                 // 退出房间
-                sendMessage(GsonUtil(new MessageBean<Boolean>(QUIT_ROOM, true)));
+                chatBean = setChatBean(GsonUtil(messageBean.getContent()));
+                quitRoom(chatBean.getRid());
+                ServerManager.getInstance().quitRoom(this, chatBean.getRid(), chatBean);
+                // sendMessage(GsonUtil(new MessageBean<ChatBean>(QUIT_ROOM, chatBean)));
                 break;
             default:
                 break;
