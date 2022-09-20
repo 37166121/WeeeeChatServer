@@ -3,10 +3,14 @@ package socket.manager;
 import socket.ChatSocket;
 import socket.bean.ChatBean;
 import socket.bean.MessageBean;
+import socket.bean.RoomBean;
 import socket.bean.UserBean;
+import socket.controller.Room;
 
 import static util.GsonUtil.GsonUtil;
 
+import java.util.ArrayList;
+import java.util.Objects;
 import java.util.Vector;
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -18,6 +22,10 @@ public class ServerManager {
     }
     // 定义一个集合，用来存放不同的客户端
     Vector<ChatSocket> vector = new Vector<ChatSocket>();
+
+    public Vector<ChatSocket> getVector() {
+        return vector;
+    }
 
     /**
      * 将socket添加到集合中
@@ -74,13 +82,25 @@ public class ServerManager {
      * @param chatBean 消息
      */
     public void enterRoom(ChatSocket socket, int rid, ChatBean chatBean) {
+        socket.getRoom().forEach( action -> {
+            if (action == rid) {
+                return;
+            }
+        });
+        RoomBean roomBean = new RoomBean(rid);
         vector.forEach( it -> {
             if (socket.equals(it)) {
+                // 把房间id添加到列表中 并返回房间人数
                 socket.getRoom().add(rid);
+                if (rid != 0) {
+                    roomBean.setCount(new Room().getRoom(rid));
+                    it.sendMessage(GsonUtil(new MessageBean<>(MessageBean.ENTER_ROOM, roomBean)));
+                }
             } else {
                 it.getRoom().forEach( action -> {
                     if (action == rid) {
-                        it.sendMessage(GsonUtil(new MessageBean<>(MessageBean.ENTER_ROOM, chatBean)));
+                        roomBean.getMessages().add(chatBean);
+                        it.sendMessage(GsonUtil(new MessageBean<>(MessageBean.ENTER_ROOM, roomBean)));
                     }
                 });
             }
@@ -96,7 +116,7 @@ public class ServerManager {
     public void quitRoom(ChatSocket socket, int rid, ChatBean chatBean) {
         vector.forEach( it -> {
             if (socket.equals(it)) {
-                socket.getRoom().remove(rid);
+                socket.getRoom().remove((Integer)rid);
             } else {
                 it.getRoom().forEach( action -> {
                     if (action == rid) {
@@ -104,6 +124,21 @@ public class ServerManager {
                     }
                 });
             }
+        });
+    }
+
+    public void quitRoom(ChatSocket socket, ChatBean chatBean) {
+        socket.getRoom().forEach( room -> {
+            vector.forEach( it -> {
+                if (!socket.equals(it)) {
+                    it.getRoom().forEach( rid -> {
+                        if (Objects.equals(rid, room)) {
+                            chatBean.setRid(rid);
+                            it.sendMessage(GsonUtil(new MessageBean<>(MessageBean.QUIT_ROOM, chatBean)));
+                        }
+                    });
+                }
+            });
         });
     }
 

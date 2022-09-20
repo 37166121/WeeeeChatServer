@@ -10,6 +10,11 @@ public class ChatBean {
     /**
      * 消息内容
      */
+    private int type = MessageBean.SPECIFY;
+
+    /**
+     * 消息内容
+     */
     private String content = "";
 
     /**

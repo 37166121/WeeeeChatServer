@@ -13,6 +13,7 @@ import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.lang.reflect.Type;
 import java.net.Socket;
+import java.util.ArrayList;
 import java.util.Vector;
 
 import static socket.bean.MessageBean.*;
@@ -58,12 +59,20 @@ public class ChatSocket extends Thread {
             while ((line = br.readLine()) != null) {
                 onMessage(line + "\n");
             }
+            quitRoom();
             // 关闭输入流
             br.close();
             ServerManager.getInstance().remove(this);
         } catch (IOException e) {
             e.printStackTrace();
         }
+    }
+
+    private void quitRoom() {
+        ChatBean chatBean = new ChatBean();
+        chatBean.setType(QUIT_ROOM);
+        chatBean.setUser(userBean);
+        ServerManager.getInstance().quitRoom(this, chatBean);
     }
 
     /**
@@ -81,8 +90,12 @@ public class ChatSocket extends Thread {
             case CONNECT:
                 // 上线
                 setUserBean(GsonUtil(messageBean.getContent()));
-                enterRoom(0);
                 sendMessage(GsonUtil(new MessageBean<Boolean>(CONNECT, true)));
+                // 进入大厅
+                ChatBean chat = new ChatBean();
+                chat.setUser(userBean);
+                chat.setType(MessageBean.ENTER_ROOM);
+                ServerManager.getInstance().enterRoom(this, 0, chat);
                 break;
             case OFFLINE:
                 // 下线
@@ -105,16 +118,12 @@ public class ChatSocket extends Thread {
             case ENTER_ROOM:
                 // 进入房间
                 chatBean = setChatBean(GsonUtil(messageBean.getContent()));
-                enterRoom(chatBean.getRid());
                 ServerManager.getInstance().enterRoom(this, chatBean.getRid(), chatBean);
-                // sendMessage(GsonUtil(new MessageBean<ChatBean>(ENTER_ROOM, chatBean)));
                 break;
             case QUIT_ROOM:
                 // 退出房间
                 chatBean = setChatBean(GsonUtil(messageBean.getContent()));
-                quitRoom(chatBean.getRid());
                 ServerManager.getInstance().quitRoom(this, chatBean.getRid(), chatBean);
-                // sendMessage(GsonUtil(new MessageBean<ChatBean>(QUIT_ROOM, chatBean)));
                 break;
             default:
                 break;
@@ -140,13 +149,5 @@ public class ChatSocket extends Thread {
 
     public Vector<Integer> getRoom() {
         return rooms;
-    }
-
-    public void enterRoom(Integer room) {
-        rooms.add(room);
-    }
-
-    public void quitRoom(Integer room) {
-        rooms.remove(room);
     }
 }
