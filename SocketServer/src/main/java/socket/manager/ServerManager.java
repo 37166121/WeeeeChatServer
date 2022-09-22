@@ -87,8 +87,8 @@ public class ServerManager {
                 return;
             }
         });
-        RoomBean roomBean = new RoomBean(rid);
         vector.forEach( it -> {
+            RoomBean roomBean = new RoomBean(rid);
             if (socket.equals(it)) {
                 // 把房间id添加到列表中 并返回房间人数
                 socket.getRoom().add(rid);

@@ -16,11 +16,14 @@ public class ChatBean {
      * 消息内容
      */
     private String content = "";
-
     /**
-     * 发送方
+     * 发送方id
      */
-    private UserBean user = new UserBean("", "", "");
+    private String fromUid = "";
+    /**
+     * 发送方昵称
+     */
+    private String nickname = "";
 
     /**
      * 接收方 私聊 用户id
@@ -36,4 +39,11 @@ public class ChatBean {
      * 消息发布时间
      */
     private Long time = new Date().getTime();
+
+    public ChatBean() {}
+
+    public ChatBean(String fromUid, String nickname) {
+        this.fromUid = fromUid;
+        this.nickname = nickname;
+    }
 }

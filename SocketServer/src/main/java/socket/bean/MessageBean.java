@@ -8,7 +8,7 @@ import lombok.Data;
 @Data
 public class MessageBean<T> {
 
-    // 消息类型
+    // 消息类型常量
     /**
      * 连接到服务器
      */
@@ -37,7 +37,9 @@ public class MessageBean<T> {
      * 退出房间
      */
     public static final int QUIT_ROOM = 0xff02;
-
+    /**
+     * 消息类型
+     */
     private int type = PRIVATE;
 
     /**

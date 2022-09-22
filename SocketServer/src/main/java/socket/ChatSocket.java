@@ -69,9 +69,8 @@ public class ChatSocket extends Thread {
     }
 
     private void quitRoom() {
-        ChatBean chatBean = new ChatBean();
+        ChatBean chatBean = new ChatBean(userBean.getUid(), userBean.getNickname());
         chatBean.setType(QUIT_ROOM);
-        chatBean.setUser(userBean);
         ServerManager.getInstance().quitRoom(this, chatBean);
     }
 
@@ -92,8 +91,7 @@ public class ChatSocket extends Thread {
                 setUserBean(GsonUtil(messageBean.getContent()));
                 sendMessage(GsonUtil(new MessageBean<Boolean>(CONNECT, true)));
                 // 进入大厅
-                ChatBean chat = new ChatBean();
-                chat.setUser(userBean);
+                ChatBean chat = new ChatBean(userBean.getUid(), userBean.getNickname());
                 chat.setType(MessageBean.ENTER_ROOM);
                 ServerManager.getInstance().enterRoom(this, 0, chat);
                 break;
