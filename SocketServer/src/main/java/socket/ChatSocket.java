@@ -68,6 +68,9 @@ public class ChatSocket extends Thread {
         }
     }
 
+    /**
+     * 下线退出所有房间
+     */
     private void quitRoom() {
         ChatBean chatBean = new ChatBean(userBean.getUid(), userBean.getNickname());
         chatBean.setType(QUIT_ROOM);
@@ -90,13 +93,13 @@ public class ChatSocket extends Thread {
                 // 上线
                 setUserBean(GsonUtil(messageBean.getContent()));
                 sendMessage(GsonUtil(new MessageBean<Boolean>(CONNECT, true)));
-                // 进入大厅
+                // 进入广场
                 ChatBean chat = new ChatBean(userBean.getUid(), userBean.getNickname());
                 chat.setType(MessageBean.ENTER_ROOM);
                 ServerManager.getInstance().enterRoom(this, 0, chat);
                 break;
             case OFFLINE:
-                // 下线
+                // 下线 因为客户端socket可能在一瞬间关闭，所以此处调用quitRoom可能会出现不能通知所有房间的情况
                 break;
             case BROADCAST :
                 // 广播频道

@@ -4,12 +4,10 @@ import socket.ChatSocket;
 import socket.bean.ChatBean;
 import socket.bean.MessageBean;
 import socket.bean.RoomBean;
-import socket.bean.UserBean;
 import socket.controller.Room;
 
 import static util.GsonUtil.GsonUtil;
 
-import java.util.ArrayList;
 import java.util.Objects;
 import java.util.Vector;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -82,21 +80,27 @@ public class ServerManager {
      * @param chatBean 消息
      */
     public void enterRoom(ChatSocket socket, int rid, ChatBean chatBean) {
+        AtomicBoolean s = new AtomicBoolean(false);
         socket.getRoom().forEach( action -> {
+            // 不能进入相同房间
             if (action == rid) {
-                return;
+                s.set(true);
             }
         });
+        if (s.get()) {
+            return;
+        }
         vector.forEach( it -> {
             RoomBean roomBean = new RoomBean(rid);
             if (socket.equals(it)) {
-                // 把房间id添加到列表中 并返回房间人数
+                // 自己时 把房间id添加到列表中 并返回房间人数
                 socket.getRoom().add(rid);
                 if (rid != 0) {
                     roomBean.setCount(new Room().getRoom(rid));
                     it.sendMessage(GsonUtil(new MessageBean<>(MessageBean.ENTER_ROOM, roomBean)));
                 }
             } else {
+                // 其他人时 向他们发送进入房间的消息
                 it.getRoom().forEach( action -> {
                     if (action == rid) {
                         roomBean.getMessages().add(chatBean);
@@ -108,7 +112,7 @@ public class ServerManager {
     }
 
     /**
-     * 退出房间
+     * 退出单个房间
      * @param socket 消息来源客户端
      * @param rid 房间号
      * @param chatBean 消息
@@ -127,6 +131,11 @@ public class ServerManager {
         });
     }
 
+    /**
+     * 下线时退出所有房间
+     * @param socket
+     * @param chatBean
+     */
     public void quitRoom(ChatSocket socket, ChatBean chatBean) {
         socket.getRoom().forEach( room -> {
             vector.forEach( it -> {

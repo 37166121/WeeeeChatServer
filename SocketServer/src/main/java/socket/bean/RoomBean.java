@@ -39,8 +39,7 @@ public class RoomBean {
     public RoomBean() {}
 
     public RoomBean(int rid) {
-        this.rid = rid;
-        name = String.valueOf(rid);
+        this(rid, String.valueOf(rid));
     }
 
     public RoomBean(int rid, String name) {
